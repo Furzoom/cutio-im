@@ -236,6 +236,7 @@ void LogController::PushLogEntity(const LogEntity& entity) {
 bool LogController::RotateLogFile() {
   PrintDelimiter(false);
   fclose(log_file_);
+  log_file_ = nullptr;
 
   fs::path dst_file_name = log_path_;
   dst_file_name.append(config_->basename + "_" + std::to_string(log_index_) + ".log");
