@@ -6,6 +6,7 @@
 #include <sys/time.h>
 
 #include <cinttypes>
+#include <cstring>
 #include <ctime>
 #include <utility>
 
@@ -75,7 +76,7 @@ LogController::LogController(const std::string& config_file, const std::string& 
   config_->name = profile_name;
 
   char work_path[512];
-  if (getcwd(work_path, sizeof(work_path)) != nullptr) {
+  if (getcwd(work_path, sizeof(work_path)) == nullptr) {
     if (errno == ERANGE) {
       assert(false);
     }
@@ -172,7 +173,7 @@ bool LogController::InitLogFile() {
     return false;
   }
 
-  if (setlinebuf(log_file_) != 0) {
+  if (setvbuf(log_file_, nullptr, _IOLBF, 0) != 0) {
     fprintf(stderr, "set line buffered for '%s' failed\n", current_log_filename_.c_str());
   }
 

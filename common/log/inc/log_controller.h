@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
 #include <mutex>
 #include <queue>
