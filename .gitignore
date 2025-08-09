@@ -1,0 +1,7 @@
+# Directory
+.idea/
+build/
+output/
+
+# Files
+.o
