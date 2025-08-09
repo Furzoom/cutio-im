@@ -2,6 +2,9 @@
 .idea/
 build/
 output/
+common/packets/
+!common/packets/yaml-cpp/
+!common/packets/googletest/
 
 # Files
 .o

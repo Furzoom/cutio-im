@@ -1,0 +1,10 @@
+log:
+  - path: log
+  - name: server
+    basename: server
+    level: 5
+    size: 1024
+  - name: session
+    basename: session
+    level: 5
+    size: 1024

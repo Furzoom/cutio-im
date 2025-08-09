@@ -1,0 +1,9 @@
+[submodule "common/packets/yaml-cpp"]
+  path = common/packets/yaml-cpp
+  url = https://github.com/jbeder/yaml-cpp.git
+  branch = master
+[submodule "common/packets/googletest"]
+  path = common/packets/googletest
+  url = https://github.com/google/googletest.git
+  branch = main
+  tag = v1.13.0
