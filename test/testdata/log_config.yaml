@@ -1,14 +1,22 @@
 log:
   - path: log
+
   - name: server
     basename: server
     level: 5 # debug
     size: 1024
+
   - name: session
     basename: session
     level: 5
     size: 1024
+
   - name: log-demo
     basename: log_demo
     level: 5
     size: 1
+
+  - name: net-demo
+    basename: net-demo
+    level: 5
+    size: 102400

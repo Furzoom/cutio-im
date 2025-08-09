@@ -10,6 +10,14 @@
 
 namespace cutio::net {
 
+static void SetThreadName(pthread_t pid, const char* name) {
+#if defined(__GLIBC__) && ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
+  pthread_setname_np(pid, name);
+#elif OS_APPLE
+  pthread_setname_np(name);
+#endif
+}
+
 IOThread::IOThread() {
   int fds[2];
   IOUtils::CreatePipe(fds);
@@ -22,21 +30,21 @@ IOThread::~IOThread() {
   IOUtils::CloseSocket(notify_send_fd_);
 }
 
-int IOThread::Push(void* arg) {
-  Lock lock(mu_);
+uint32_t IOThread::Push(void* arg) {
+  std::lock_guard lock(mu_);
   queue_.push(arg);
-  return static_cast<int>(queue_.size());
+  return static_cast<uint32_t>(queue_.size());
 }
 
-Lock* IOThread::Push(void* arg, int* size) {
-  Lock* lock = new Lock(mu_);
+std::unique_lock<std::mutex> IOThread::Push(void* arg, int* size) {
+  std::unique_lock lock(mu_);
   queue_.push(arg);
   *size = static_cast<int>(queue_.size());
   return lock;
 }
 
 void* IOThread::Pop() {
-  Lock lock(mu_);
+  std::lock_guard lock(mu_);
   if (queue_.empty()) {
     return nullptr;
   }
@@ -46,7 +54,7 @@ void* IOThread::Pop() {
 }
 
 void IOThread::ClearQueue() {
-  Lock lock(mu_);
+  std::lock_guard lock(mu_);
   while (!queue_.empty()) {
     void* p = queue_.front();
     queue_.pop();
@@ -57,6 +65,7 @@ void IOThread::ClearQueue() {
 
 void* IOThread::ThreadFun(void* arg) {
   auto* p = static_cast<IOThread*>(arg);
+  SetThreadName(nullptr, p->GetThreadName().c_str());
   p->OnThreadRun();
   return nullptr;
 }
@@ -66,6 +75,8 @@ void IOThread::StartThread() {
   if (pthread_create(&tid, nullptr, ThreadFun, this) != 0) {
     assert(0);
   }
+
+  SetThreadName(tid, GetThreadName().c_str());
 
   pthread_detach(tid);
 }

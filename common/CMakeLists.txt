@@ -3,4 +3,5 @@
 
 add_subdirectory(log)
 add_subdirectory(net)
+add_subdirectory(net_filter)
 add_subdirectory(thread_pool)

@@ -15,4 +15,4 @@ target_include_directories(log
 
 target_link_libraries(log yaml-cpp)
 
-cutio_cxx_executable_exclude_from_all(log_demo src "log yaml-cpp")
+cutio_cxx_executable_exclude_from_all(log_demo demo "log yaml-cpp")

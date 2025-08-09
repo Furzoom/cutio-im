@@ -37,82 +37,82 @@ const char* const kLogTypeNotify = "NOTIFY";
 #elif OS_IOS
 # define _LOG_MSG(level, type, msg, ...)
 #elif OS_LINUX || OS_MAC
-# define _LOG_MSG(level, type, msg, ...)                                                      \
-    if (level <= cutio::log::LogController::GetInstance()->GetLevel()) {                      \
-      char log_line[cutio::log::kLineLength] = {0};                                           \
-      snprintf(log_line, sizeof(log_line), "%s:%d|%s()|",                                     \
-      strrchr(__FILE__, '/') + 1, __LINE__, __FUNCTION__);                                    \
-      char log_buf[cutio::log::kBufferLength] = {0};                                          \
-      snprintf(log_buf, sizeof(log_buf), msg, __VA_ARGS__);                                   \
-      std::string msg_str(log_line);                                                          \
-      msg_str += log_buf;                                                                     \
-      cutio::log::LogController::GetInstance()->Log(level, type, msg_str.c_str());            \
+# define _LOG_MSG(level, type, ...)                                                      \
+    if (level <= cutio::log::LogController::GetInstance()->GetLevel()) {                 \
+      char log_line[cutio::log::kLineLength] = {0};                                      \
+      snprintf(log_line, sizeof(log_line), "%s:%d|%s()|",                                \
+               strrchr(__FILE__, '/') + 1, __LINE__, __FUNCTION__);                      \
+      char log_buf[cutio::log::kBufferLength] = {0};                                     \
+      snprintf(log_buf, sizeof(log_buf), __VA_ARGS__);                                   \
+      std::string msg_str(log_line);                                                     \
+      msg_str += log_buf;                                                                \
+      cutio::log::LogController::GetInstance()->Log(level, type, msg_str.c_str());       \
     }
 
 #else
 #error "unsupported OS"
 #endif
 
-# define ASSERTS(c, msg, ...) {                                                               \
-    if (!(c)) {                                                                               \
-      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);      \
-      assert(0);                                                                              \
-    }                                                                                         \
+# define ASSERTS(c, ...) {                                                               \
+    if (!(c)) {                                                                          \
+      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);      \
+      assert(0);                                                                         \
+    }                                                                                    \
   }
 
-# define ASSERTS_RETURN(c, msg, ...) { \
-    if (!(c)) {                                                                               \
-      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);      \
-      assert(0);                                                                              \
-      return;                                                                                 \
-    }                                                                                         \
+# define ASSERTS_RETURN(c, ...) { \
+    if (!(c)) {                                                                          \
+      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);      \
+      assert(0);                                                                         \
+      return;                                                                            \
+    }                                                                                    \
   }
 
 
-# define ASSERTS_RETURN_INT(c, msg, ...) {                                                   \
-    if (!(c)) {                                                                              \
-      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);     \
-      assert(0);                                                                             \
-      return -1;                                                                             \
-    }                                                                                        \
+# define ASSERTS_RETURN_INT(c, ...) {                                                   \
+    if (!(c)) {                                                                         \
+      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);     \
+      assert(0);                                                                        \
+      return -1;                                                                        \
+    }                                                                                   \
   }
 
-# define ASSERTS_RETURN_FALSE(c, msg, ...) {                                                 \
-    if (!(c)) {                                                                              \
-      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);     \
-      assert(0);                                                                             \
-      return false;                                                                          \
-    }                                                                                        \
+# define ASSERTS_RETURN_FALSE(c, ...) {                                                 \
+    if (!(c)) {                                                                         \
+      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);     \
+      assert(0);                                                                        \
+      return false;                                                                     \
+    }                                                                                   \
   }
 
-# define ASSERTS_RETURN_NULL(c, msg, ...) {                                                  \
-    if (!(c)) {                                                                              \
-      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);     \
-      assert(0);                                                                             \
-      return nullptr;                                                                        \
-    }                                                                                        \
+# define ASSERTS_RETURN_NULL(c, ...) {                                                  \
+    if (!(c)) {                                                                         \
+      _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);     \
+      assert(0);                                                                        \
+      return nullptr;                                                                   \
+    }                                                                                   \
   }
 
-# define DebugSend(msg, ...)                                                                 \
-    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeMsgSend, msg, __VA_ARGS__);
+# define DebugSend(...)                                                                 \
+    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeMsgSend, __VA_ARGS__);
 
-# define DebugRecv(msg, ...)                                                                 \
-    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeMsgRecv, msg, __VA_ARGS__);
+# define DebugRecv(...)                                                                 \
+    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeMsgRecv, __VA_ARGS__);
 
-# define DebugMsg(msg, ...)                                                                  \
-    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);
+# define DebugMsg(...)                                                                  \
+    _LOG_MSG(cutio::log::Level::kDebug, cutio::log::kLogTypeNotify, __VA_ARGS__);
 
-# define InfoMsg(msg, ...)                                                                   \
-    _LOG_MSG(cutio::log::Level::kInfo, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);
+# define InfoMsg(...)                                                                   \
+    _LOG_MSG(cutio::log::Level::kInfo, cutio::log::kLogTypeNotify, __VA_ARGS__);
 
-# define WarnMsg(msg, ...)                                                                   \
-    _LOG_MSG(cutio::log::Level::kWarn, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);
+# define WarnMsg(...)                                                                   \
+    _LOG_MSG(cutio::log::Level::kWarn, cutio::log::kLogTypeNotify, __VA_ARGS__);
 
-# define ErrorMsg(msg, ...)                                                                  \
-    _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);
+# define ErrorMsg(...)                                                                  \
+    _LOG_MSG(cutio::log::Level::kError, cutio::log::kLogTypeNotify, __VA_ARGS__);
 
-# define FatalMsg(msg, ...)                                                                  \
-    _LOG_MSG(cutio::log::Level::kFatal, cutio::log::kLogTypeNotify, msg, __VA_ARGS__);       \
+# define FatalMsg(...)                                                                  \
+    _LOG_MSG(cutio::log::Level::kFatal, cutio::log::kLogTypeNotify, __VA_ARGS__);       \
     abort();
 
 class Config;
@@ -120,18 +120,20 @@ class Config;
 class LogEntity {
  public:
   LogEntity();
-  LogEntity(std::string time, std::string type, std::string msg, Level level);
+  LogEntity(std::string time, std::string type, std::string msg, Level level, uint64_t tid);
 
   std::string GetTime() const { return time_; }
   std::string GetType() const { return type_; }
   std::string GetMessage() const { return msg_; }
   Level GetLevel() const { return level_; }
+  uint64_t GetTid() const { return tid_; }
 
  private:
   std::string time_;
   std::string type_;
   std::string msg_;
   Level level_;
+  uint64_t tid_;
 };
 
 class LogController {

@@ -3,6 +3,8 @@
 
 #include "common/log/inc/log_controller.h"
 
+#include <pthread.h>
+#include <sys/syscall.h>
 #include <sys/time.h>
 
 #include <cinttypes>
@@ -38,13 +40,29 @@ std::string LevelToString(Level level) {
   return "UNKNOWN";
 }
 
+static uint64_t GetTid() {
+  static thread_local uint64_t tid = 0;
+  if (tid != 0) {
+    return tid;
+  }
+
+#if OS_APPLE
+  pthread_threadid_np(nullptr, &tid);
+#else
+  tid = static_cast<uint64_t>(syscall(SYS_gettid));
+#endif
+
+  return tid;
+}
+
 LogEntity::LogEntity() : level_(Level::kClose) {}
 
-LogEntity::LogEntity(std::string time, std::string type, std::string msg, Level level)
-    : time_(std::move(time)),
-      type_(std::move(type)),
-      msg_(std::move(msg)),
-      level_(level) {}
+LogEntity::LogEntity(std::string time, std::string type, std::string msg, Level level, uint64_t tid)
+    : time_{std::move(time)},
+      type_{std::move(type)},
+      msg_{std::move(msg)},
+      level_{level},
+      tid_{tid} {}
 
 LogController* LogController::instance_ = nullptr;
 
@@ -66,9 +84,9 @@ LogController* LogController::GetInstance() {
 
 LogController::LogController(const std::string& config_file, const std::string& profile_name,
                              const std::string& extra_param, const std::string& log_filepath)
-    : config_(new Config),
-      log_index_(1),
-      log_file_(nullptr) {
+    : config_{new Config},
+      log_index_{1},
+      log_file_{nullptr} {
   assert(!config_file.empty());
   assert(!profile_name.empty());
   begin_time_ = FormatTime(true);
@@ -126,7 +144,7 @@ LogController::~LogController() {
 }
 
 void LogController::Log(Level level, const char* type, const char* msg) {
-  LogEntity entity(FormatTime(false), type, msg, level);
+  LogEntity entity(FormatTime(false), type, msg, level, GetTid());
   PushLogEntity(entity);
 }
 
@@ -208,8 +226,9 @@ void LogController::PrintDelimiter(bool start) {
 void LogController::PushLogEntity(const LogEntity& entity) {
   std::lock_guard lock(mu_);
   assert(log_file_);
-  fprintf(log_file_, "%s|%5s|%s|%s\n", entity.GetTime().c_str(), LevelToString(entity.GetLevel()).c_str(),
-          entity.GetType().c_str(), entity.GetMessage().c_str());
+  fprintf(log_file_, "%s|%5s|%s|%7" PRIu64 "|%s\n",
+          entity.GetTime().c_str(), LevelToString(entity.GetLevel()).c_str(), entity.GetType().c_str(),
+          entity.GetTid(), entity.GetMessage().c_str());
 
   // Rotate log file.
   auto log_size = ftell(log_file_);

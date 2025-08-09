@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include <mutex>
 #include <queue>
 
-#include "common/net/inc/mutex.h"
 #include "inc/inc.h"
 
 namespace cutio::net {
@@ -13,10 +13,10 @@ namespace cutio::net {
 class IOThread : public noncopyable {
 public:
   IOThread();
-  virtual ~IOThread();
+  ~IOThread() override;
 
-  int Push(void *arg);
-  Lock *Push(void *arg, int *size);
+  uint32_t Push(void *arg);
+  std::unique_lock<std::mutex> Push(void *arg, int *size);
   void *Pop();
   void ClearQueue();
 
@@ -28,13 +28,14 @@ public:
  protected:
   virtual void OnRelease() = 0;
   virtual void OnThreadRun() = 0;
+  virtual std::string GetThreadName() { return std::string{}; };
 
 protected:
   int notify_receive_fd_;
   int notify_send_fd_;
 
 private:
-  Mutex mu_;
+  std::mutex mu_;
   std::queue<void*> queue_;
 };
 
